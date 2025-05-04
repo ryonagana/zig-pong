@@ -2,6 +2,9 @@
 
 This is a simple Pong game created using the **Zig 0.14.0** programming language and the **Allegro** library.
 
+## Screenshot
+![Zig Pong](./screenshot01.png)
+
 ## Requirements
 
 - **Zig 0.14.0** installed.
