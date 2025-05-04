@@ -10,7 +10,100 @@ pub const allegro = @cImport({
 
 });
 
-const allegro_keys = @import("allegro5_keys.zig");
+const a = allegro; 
+
+pub const AllegroKeys = enum(i32) {
+    KEY_Q = a.ALLEGRO_KEY_Q,
+    KEY_W = a.ALLEGRO_KEY_W,
+    KEY_E = a.ALLEGRO_KEY_E,
+    KEY_R = a.ALLEGRO_KEY_R,
+    KEY_T = a.ALLEGRO_KEY_T,
+    KEY_Y = a.ALLEGRO_KEY_Y,
+    KEY_U = a.ALLEGRO_KEY_U,
+    KEY_I = a.ALLEGRO_KEY_I,
+    KEY_O = a.ALLEGRO_KEY_O,
+    KEY_P = a.ALLEGRO_KEY_P,
+    KEY_A = a.ALLEGRO_KEY_A,
+    KEY_S = a.ALLEGRO_KEY_S,
+    KEY_D = a.ALLEGRO_KEY_D,
+    KEY_F = a.ALLEGRO_KEY_F,
+    KEY_G = a.ALLEGRO_KEY_G,
+    KEY_H = a.ALLEGRO_KEY_H,
+    KEY_J = a.ALLEGRO_KEY_J,
+    KEY_K = a.ALLEGRO_KEY_K,
+    KEY_L = a.ALLEGRO_KEY_L,
+    KEY_Z = a.ALLEGRO_KEY_Z,
+    KEY_X = a.ALLEGRO_KEY_X,
+    KEY_C = a.ALLEGRO_KEY_C,
+    KEY_V = a.ALLEGRO_KEY_V,
+    KEY_B = a.ALLEGRO_KEY_B,
+    KEY_N = a.ALLEGRO_KEY_N,
+    KEY_M = a.ALLEGRO_KEY_M,
+    KEY_1 = a.ALLEGRO_KEY_1,
+    KEY_2 = a.ALLEGRO_KEY_2,
+    KEY_3 = a.ALLEGRO_KEY_3,
+    KEY_4 = a.ALLEGRO_KEY_4,
+    KEY_5 = a.ALLEGRO_KEY_5,
+    KEY_6 = a.ALLEGRO_KEY_6,
+    KEY_7 = a.ALLEGRO_KEY_7,
+    KEY_8 = a.ALLEGRO_KEY_8,
+    KEY_9 = a.ALLEGRO_KEY_9,
+    KEY_0 = a.ALLEGRO_KEY_0,
+
+    //modifiers
+    KEY_LCTRL = a.ALLEGRO_KEY_LCTRL,
+    KEY_RCTRL = a.ALLEGRO_KEY_RCTRL,
+    KEY_LWIN = a.ALLEGRO_KEY_LWIN,
+    KEY_RWIN = a.ALLEGRO_KEY_RWIN,
+    KEY_LSHIFT = a.ALLEGRO_KEY_LSHIFT,
+    KEY_RSHIFT = a.ALLEGRO_KEY_RSHIFT,
+    KEY_ALTGR = a.ALLEGRO_KEY_ALTGR,
+    KEY_ALT = a.ALLEGRO_KEY_ALT,
+
+    //outro
+    KEY_TAB = a.ALLEGRO_KEY_TAB,
+    KEY_CAPSLOCK = a.ALLEGRO_KEY_CAPSLOCK,
+    KEY_ESC = a.ALLEGRO_KEY_ESCAPE,
+    KEY_SPACE = a.ALLEGRO_KEY_SPACE,
+    KEY_BACKSPACE = a.ALLEGRO_KEY_BACKSPACE,
+
+    KEY_MINUS = a.ALLEGRO_KEY_MINUS,
+    KEY_EQUAL = a.ALLEGRO_KEY_EQUALS,
+    KEY_SINGLE_QUOTE = a.ALLEGRO_KEY_QUOTE,
+    KEY_COMMA = a.ALLEGRO_KEY_COMMA,
+
+    //F-keys
+    KEY_F1 = a.ALLEGRO_KEY_F1,
+    KEY_F2 = a.ALLEGRO_KEY_F2,
+    KEY_F3 = a.ALLEGRO_KEY_F3,
+    KEY_F4 = a.ALLEGRO_KEY_F4,
+    KEY_F5 = a.ALLEGRO_KEY_F5,
+    KEY_F6 = a.ALLEGRO_KEY_F6,
+    KEY_F7 = a.ALLEGRO_KEY_F7,
+    KEY_F8 = a.ALLEGRO_KEY_F8,
+    KEY_F9 = a.ALLEGRO_KEY_F9,
+    KEY_F10 = a.ALLEGRO_KEY_F10,
+    KEY_F11 = a.ALLEGRO_KEY_F11,
+    KEY_F12 = a.ALLEGRO_KEY_F12,
+    
+    KEY_PRINTSCR = a.ALLEGRO_KEY_PRINTSCREEN,
+    KEY_SCROLLLOCK = a.ALLEGRO_KEY_SCROLLLOCK,
+    KEY_PAUSE = a.ALLEGRO_KEY_PAUSE,
+
+    KEY_INS = a.ALLEGRO_KEY_INSERT,
+    KEY_HOME = a.ALLEGRO_KEY_HOME,
+    KEY_PGUP = a.ALLEGRO_KEY_PGUP,
+    KEY_DELETE = a.ALLEGRO_KEY_DELETE,
+    KEY_END = a.ALLEGRO_KEY_END,
+    KEY_PGDN = a.ALLEGRO_KEY_PGDN,
+
+    //ARROWS
+    KEY_UP = a.ALLEGRO_KEY_UP,
+    KEY_DOWN = a.ALLEGRO_KEY_DOWN,
+    KEY_LEFT = a.ALLEGRO_KEY_LEFT,
+    KEY_RIGHT = a.ALLEGRO_KEY_RIGHT,
+};
+
 
 pub const FPS:f64 = 60.0;
 pub const FPS_CLOCK: f64  = 1.0 / FPS; 
@@ -197,24 +290,34 @@ fn a5_init_allegro() AllegroError!void {
     return;
 }
 
-pub fn a5_is_key_pressed(key: allegro_keys.AllegroKeys) bool {
+pub fn a5_is_key_pressed(key: AllegroKeys) bool {
 
-    if(key  > allegro.ALLEGRO_KEY_MAX or key < 0){
+    if(@intFromEnum(key)  > a.ALLEGRO_KEY_MAX or @intFromEnum(key) < 0){
         return false;
     }
 
-    const pressed: i32 = a5_keys[key];
-    return (pressed & KeyStateFlags.KeyPressed) and !(pressed & KeyStateFlags.KeyReleased);
-}
+    const index = @as(usize, @intCast(@intFromEnum(key)));
+    const pressed: i32 = a5_keys[index];
+   
+    return (
+            pressed & @intFromEnum(KeyStateFlags.KeyPressed) != 0
+            and (pressed & @intFromEnum(KeyStateFlags.KeyReleased)) == 0
+           );
+   }
 
-pub fn a5_is_key_released(key: allegro_keys.AllegroKeys) bool {
+pub fn a5_is_key_released(key: AllegroKeys) bool {
     
-    if(key  > allegro.ALLEGRO_KEY_MAX or key < 0){
+    if(@intFromEnum(key)  > a.ALLEGRO_KEY_MAX or @intFromEnum(key) < 0){
         return false;
     }
 
-    const released: i32 = a5_keys[key];
-    return (released & KeyStateFlags.KeyReleased) and !(released & KeyStateFlags.KeyPressed);
+    const index = @as(usize, @intCast(@intFromEnum(key)));
+    const pressed: i32 = a5_keys[index];
+   
+    return (
+            pressed & @intFromEnum(KeyStateFlags.KeyPressed) == 0
+            and (pressed & @intFromEnum(KeyStateFlags.KeyReleased)) != 0
+           );
 }
 
 
@@ -246,7 +349,7 @@ pub fn a5_keyboard_poll_events(e:*allegro.ALLEGRO_EVENT) void {
         else => {
                 
             for(&a5_keys) |*key| {
-                const keypressed = ~@intFromEnum(KeyStateFlags.KeyReleased);
+                const keypressed = key.* & ~@intFromEnum(KeyStateFlags.KeyReleased);
                 key.* |= keypressed; 
             }
         }
