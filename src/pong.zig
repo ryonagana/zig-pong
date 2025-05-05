@@ -7,6 +7,10 @@ const a5 = @import("allegro5.zig");
 
 const Collider = @import("./collision.zig").Collider;
 
+
+
+var sfx_blip: [3]a5.A5_SFX = undefined;
+
 const Paddle = struct {
     x:f32,
     y:f32,
@@ -51,6 +55,12 @@ var rand: std.Random = undefined;
 
 pub fn pong_start(rnd:std.Random) void {
     rand = rnd;
+
+    sfx_blip[0] = a5.a5_load_sample("sfx//blip01.wav");
+    sfx_blip[1] = a5.a5_load_sample("sfx//blip02.wav");
+    sfx_blip[2] = a5.a5_load_sample("sfx//blip03.wav");
+
+    
 }
 
 pub fn pong_init() void {
@@ -136,6 +146,7 @@ fn pong_controls() void {
 
     if(pads[0].collider.CollidesWith(ball.collider)){
         ball.vx *= -1;
+        //a5.a5_play_sample(&sfx_blip[0], 1, 1, 1,  a.ALLEGRO_PLAYMODE_ONCE);
     }
 
     if(pads[1].collider.CollidesWith(ball.collider)){

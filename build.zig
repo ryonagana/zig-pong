@@ -91,7 +91,8 @@ pub fn build(b: *std.Build) void {
         exe.linkSystemLibrary("allegro_ttf-5");
         exe.linkSystemLibrary("allegro_dialog-5");
         exe.linkSystemLibrary("allegro_image-5");
-
+        exe.linkSystemLibrary("allegro_audio-5");
+        exe.linkSystemLibrary("allegro_acodec-5");
        
 
 

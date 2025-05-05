@@ -9,7 +9,7 @@ const pong = @import("./pong.zig");
 var main_window: a5.a5_window = undefined;
 
 pub fn main() !void {
-    
+  
     const seed=  @as(u64, @intCast(std.time.milliTimestamp()));
     var prng = std.Random.Xoshiro256.init(seed);
     const rand = prng.random();
@@ -25,6 +25,8 @@ pub fn main() !void {
     defer a.al_destroy_event_queue(main_window.queue);
     defer a.al_destroy_timer(main_window.timer);
     defer a.al_destroy_bitmap(main_window.screen);
+
+    a5.a5_init_sound(16);
 
     pong.pong_start(rand);
     pong.pong_init();

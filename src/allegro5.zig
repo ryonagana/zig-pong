@@ -8,6 +8,9 @@ pub const allegro = @cImport({
     @cInclude("allegro5/allegro_primitives.h");
     @cInclude("allegro5/allegro_native_dialog.h");
 
+    @cInclude("allegro5/allegro_audio.h");
+    @cInclude("allegro5/allegro_acodec.h");
+
 });
 
 const a = allegro; 
@@ -118,6 +121,10 @@ const KeyStateFlags = enum(i32) {
 
 var a5_keys:[allegro.ALLEGRO_KEY_MAX]i32 = undefined;
 
+pub const A5_SFX = struct {
+    sample: ?*allegro.ALLEGRO_SAMPLE,
+    sample_instance: ?*allegro.ALLEGRO_SAMPLE_INSTANCE
+};
 
 pub const AllegroError = error {
     AllegroInitFailed,
@@ -132,6 +139,11 @@ pub const AllegroError = error {
     AllegroAddonNativeDialogFailed,
 
 };
+
+
+var a5_mixer: ?*allegro.ALLEGRO_MIXER = null;
+var a5_voice: ?*allegro.ALLEGRO_VOICE = null;
+
 
 pub const a5_window = struct  {
     display: ?*allegro.ALLEGRO_DISPLAY,
@@ -230,6 +242,37 @@ pub const a5_window = struct  {
 };
 
 
+pub fn a5_init_sound(reserve_samples:i32 ) void {
+    if(!allegro.al_install_audio()){
+        std.debug.print("Allegro Audio Failed!\n", .{});
+    }
+
+    if(!allegro.al_init_acodec_addon()){
+        std.debug.print("Allegro Audio Codec Failed!\n", .{});
+    }
+
+    if(!allegro.al_reserve_samples(reserve_samples)){
+        std.debug.print("Allegro Reserve Samples Failed!\n", .{});
+    }
+
+    a5_mixer = allegro.al_create_mixer(44100, allegro.ALLEGRO_AUDIO_DEPTH_INT16, allegro.ALLEGRO_CHANNEL_CONF_2);
+    if(a5_mixer == null){
+        std.debug.print("Allegro Mixer Failed!\n", .{});
+    }
+    
+    a5_voice = allegro.al_create_voice(44100, allegro.ALLEGRO_AUDIO_DEPTH_FLOAT32, allegro.ALLEGRO_CHANNEL_CONF_2);
+    
+    if(a5_voice == null){
+        std.debug.print("Allegro Voice Failed!\n", .{});
+    }
+    if(!allegro.al_attach_mixer_to_voice(a5_mixer, a5_voice)){
+        std.debug.print("Allegro Attach Mixer To Voice Failed!\n", .{});
+    }
+    if(!allegro.al_set_default_mixer(a5_mixer)){
+        std.debug.print("Allegro Set Default Mixer Failed!\n", .{});
+    }
+
+}
 
 pub fn a5_init() void {
     
@@ -356,6 +399,78 @@ pub fn a5_keyboard_poll_events(e:*allegro.ALLEGRO_EVENT) void {
     }
 
 
+}
+
+pub fn a5_load_sample(path: [*c]const u8) A5_SFX {
+    
+    if(path == null){
+        std.debug.print("Allegro Sample Path is Null!\n", .{});
+        return .{
+            .sample = null,
+            .sample_instance = null
+        };
+    }
+    
+    const sample = allegro.al_load_sample(path);
+    const inst = allegro.al_create_sample_instance(sample);
+    
+
+
+    if(sample == null){
+        std.debug.print("Allegro Load Sample Failed!\n", .{});
+        return .{
+            .sample = null,
+            .sample_instance = null
+        };
+    }
+
+    if(inst == null){
+        std.debug.print("Allegro Create Sample Instance Failed!\n", .{});
+        return .{
+            .sample = null,
+            .sample_instance = null
+        };
+    }
+
+    const sfx:A5_SFX = .{
+        .sample = sample,
+        .sample_instance = inst
+    };
+
+    return sfx;
+}
+
+pub fn a5_play_sample(sfx: *A5_SFX, volume:f32, pan:f32, speed:f32, mode:a.ALLEGRO_PLAYMODE ) void {
+    if(sfx.sample == null){
+        std.debug.print("Allegro Sample is Null!\n", .{});
+        return;
+    }
+
+    if(sfx.sample_instance == null){
+        std.debug.print("Allegro Sample Instance is Null!\n", .{});
+        return;
+    }
+
+
+    a.al_set_sample_instance_gain(sfx.*.sample_instance, volume);
+    a.al_set_sample_instance_pan(sfx.*.sample_instance, pan);
+    a.al_set_sample_instance_speed(sfx.*.sample_instance, speed);
+    a.al_set_sample_instance_playmode(sfx.*.sample_instance, mode);
+    a.al_play_sample_instance(sfx.*.sample_instance);
+}
+pub fn a5_stop_sample(sfx: *A5_SFX) void {
+    if(sfx.sample == null){
+        std.debug.print("Allegro Sample is Null!\n", .{});
+        return;
+    }
+
+    if(sfx.sample_instance == null){
+        std.debug.print("Allegro Sample Instance is Null!\n", .{});
+        return;
+    }
+
+    allegro.al_set_sample_instance_playing(sfx.sample_instance, false);
+    allegro.al_stop_sample_instance(sfx.sample_instance);
 }
 
 test "keys has correct size" {
